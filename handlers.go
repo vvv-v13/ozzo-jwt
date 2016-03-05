@@ -8,28 +8,25 @@ package jwt
 import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-ozzo/ozzo-routing"
-	"log"
 	"net/http"
 	"strings"
-	"time"
 )
 
 // User is the key used to store and retrieve the user identity information in routing.Context
 const User = "User"
 
 type JWTConfig struct {
-	SecretKey string
+	Alg     string
+	Secret  string
+	Expires int64
 }
 
 // Identity represents an authenticated user. If a user is successfully authenticated by
 // an auth handler (Basic, Bearer, or Query), an Identity object will be made available for injection.
 type Identity interface{}
 
-
 type Payload interface{}
 type JWTPayload map[string]interface{}
-
-
 
 // DefaultRealm is the default realm name for HTTP authentication. It is used by HTTP authentication based on
 // Basic and Bearer.
@@ -38,13 +35,11 @@ var DefaultRealm = "API"
 // TokenAuthFunc is the function for authenticating a user based on a secret token.
 type TokenAuthFunc func(c *routing.Context, payload map[string]interface{}) (Payload, error)
 
-// TokenName is the query parameter name for auth token.
-var TokenName = "access-token"
 
 // JWT returns a routing.Handler that performs HTTP authentication based on bearer token.
 // It can be used like the following:
 //
-// Example 
+// Example
 //
 // By default, the auth realm is named as "API". You may customize it by specifying the realm parameter.
 //
@@ -64,7 +59,7 @@ func JWT(fn TokenAuthFunc, jwtConfig JWTConfig, realm ...string) routing.Handler
 			return routing.NewHTTPError(http.StatusUnauthorized, "ivalid credential")
 		}
 
-		token, err := jwt.Parse(header[7:], func(t *jwt.Token) (interface{}, error) { return []byte(jwtConfig.SecretKey), nil })
+		token, err := jwt.Parse(header[7:], func(t *jwt.Token) (interface{}, error) { return []byte(jwtConfig.Secret), nil })
 		if err != nil {
 			c.Response.Header().Set("WWW-Authenticate", `Bearer realm="`+name+`"`)
 			return routing.NewHTTPError(http.StatusUnauthorized, "ivalid credential")
@@ -84,18 +79,24 @@ func JWT(fn TokenAuthFunc, jwtConfig JWTConfig, realm ...string) routing.Handler
 	}
 }
 
-func CreateToken(jwtConfig JWTConfig, payload JWTPayload ) string {
+func CreateToken(jwtConfig JWTConfig, payload JWTPayload) (string, error) {
 	// Create JWT token
-	token := jwt.New(jwt.SigningMethodHS256)
-	token.Claims = payload
 
-	// Expire in 120 minutes
-	token.Claims["exp"] = time.Now().Add(time.Minute * 120).Unix()
-	tokenString, err := token.SignedString([]byte(jwtConfig.SecretKey))
+	signingMethod := jwt.SigningMethodHS256
 
-	if err != nil {
+	switch jwtConfig.Alg {
+	case "HS384":
+		signingMethod = jwt.SigningMethodHS384
+	case "HS512":
+		signingMethod = jwt.SigningMethodHS512
 	}
 
-	return tokenString
+	token := jwt.New(signingMethod)
+	token.Claims = payload
+	token.Claims["exp"] = jwtConfig.Expires
+
+	tokenString, err := token.SignedString([]byte(jwtConfig.Secret))
+
+	return tokenString, err
 
 }
