@@ -24,7 +24,12 @@ type JWTConfig struct {
 // Identity represents an authenticated user. If a user is successfully authenticated by
 // an auth handler (Basic, Bearer, or Query), an Identity object will be made available for injection.
 type Identity interface{}
+
+
 type Payload interface{}
+type JWTPayload map[string]interface{}
+
+
 
 // DefaultRealm is the default realm name for HTTP authentication. It is used by HTTP authentication based on
 // Basic and Bearer.
@@ -39,26 +44,7 @@ var TokenName = "access-token"
 // JWT returns a routing.Handler that performs HTTP authentication based on bearer token.
 // It can be used like the following:
 //
-//   import (
-//     "errors"
-//     "fmt"
-//     "net/http"
-//     "github.com/go-ozzo/ozzo-routing"
-//     "github.com/go-ozzo/ozzo-routing/auth/jwt"
-//   )
-//   func main() {
-//     r := routing.New()
-//     r.Use(auth.JWT(func(c *routing.Context, token string) (auth.Identity, error) {
-//!       if token == "secret" {
-//!         return auth.Identity("demo"), nil
-//!       }
-//!       return nil, errors.New("invalid credential")
-//!     }))
-//     r.Get("/demo", func(c *routing.Context) error {
-//       fmt.Fprintf(res, "Hello, %v", c.Get(auth.User))
-//       return nil
-//     })
-//   }
+// Example 
 //
 // By default, the auth realm is named as "API". You may customize it by specifying the realm parameter.
 //
@@ -98,18 +84,18 @@ func JWT(fn TokenAuthFunc, jwtConfig JWTConfig, realm ...string) routing.Handler
 	}
 }
 
-func CreateToken(jwtConfig JWTConfig) string {
+func CreateToken(jwtConfig JWTConfig, payload JWTPayload ) string {
 	// Create JWT token
 	token := jwt.New(jwt.SigningMethodHS256)
-
-	token.Claims["id"] = "userId"
+	token.Claims = payload
 
 	// Expire in 120 minutes
 	token.Claims["exp"] = time.Now().Add(time.Minute * 120).Unix()
 	tokenString, err := token.SignedString([]byte(jwtConfig.SecretKey))
+
 	if err != nil {
 	}
-	log.Println(tokenString)
+
 	return tokenString
 
 }
