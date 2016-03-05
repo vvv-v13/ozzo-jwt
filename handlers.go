@@ -10,7 +10,6 @@ import (
 	"github.com/go-ozzo/ozzo-routing"
 	"net/http"
 	"strings"
-        "log"
 )
 
 // User is the key used to store and retrieve the user identity information in routing.Context
@@ -60,7 +59,6 @@ func JWT(fn TokenAuthFunc, jwtConfig JWTConfig, realm ...string) routing.Handler
 		}
 
 		token, err := jwt.Parse(header[7:], func(t *jwt.Token) (interface{}, error) { return []byte(jwtConfig.Secret), nil })
-                log.Println(token, err)
 		if err != nil {
 			c.Response.Header().Set("WWW-Authenticate", `Bearer realm="`+name+`"`)
 			return routing.NewHTTPError(http.StatusUnauthorized, err.Error())
