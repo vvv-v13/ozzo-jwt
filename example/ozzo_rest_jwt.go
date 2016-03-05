@@ -13,13 +13,6 @@ import (
 	"time"
 )
 
-/*
-type Post struct {
-	Id      int64  `json:"id"`
-	Message string `json:"message"`
-}
-*/
-
 func main() {
 
 	jwtConfig := jwt.JWTConfig{
