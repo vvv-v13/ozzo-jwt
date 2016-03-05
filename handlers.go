@@ -10,6 +10,7 @@ import (
 	"github.com/go-ozzo/ozzo-routing"
 	"net/http"
 	"strings"
+        "log"
 )
 
 // User is the key used to store and retrieve the user identity information in routing.Context
@@ -33,8 +34,7 @@ type JWTPayload map[string]interface{}
 var DefaultRealm = "API"
 
 // TokenAuthFunc is the function for authenticating a user based on a secret token.
-type TokenAuthFunc func(c *routing.Context, payload map[string]interface{}) (Payload, error)
-
+type TokenAuthFunc func(c *routing.Context, payload JWTPayload) (Payload, error)
 
 // JWT returns a routing.Handler that performs HTTP authentication based on bearer token.
 // It can be used like the following:
@@ -60,9 +60,10 @@ func JWT(fn TokenAuthFunc, jwtConfig JWTConfig, realm ...string) routing.Handler
 		}
 
 		token, err := jwt.Parse(header[7:], func(t *jwt.Token) (interface{}, error) { return []byte(jwtConfig.Secret), nil })
+                log.Println(token, err)
 		if err != nil {
 			c.Response.Header().Set("WWW-Authenticate", `Bearer realm="`+name+`"`)
-			return routing.NewHTTPError(http.StatusUnauthorized, "ivalid credential")
+			return routing.NewHTTPError(http.StatusUnauthorized, err.Error())
 		}
 
 		payload := token.Claims
@@ -79,9 +80,8 @@ func JWT(fn TokenAuthFunc, jwtConfig JWTConfig, realm ...string) routing.Handler
 	}
 }
 
+// CreateToken returns token string
 func CreateToken(jwtConfig JWTConfig, payload JWTPayload) (string, error) {
-	// Create JWT token
-
 	signingMethod := jwt.SigningMethodHS256
 
 	switch jwtConfig.Alg {
