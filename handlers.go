@@ -88,7 +88,7 @@ func JWT(fn TokenAuthFunc, jwtConfig JWTConfig, realm ...string) routing.Handler
 		header := c.Request.Header.Get("Authorization")
 		if !strings.HasPrefix(header, "Bearer ") {
 			c.Response.Header().Set("WWW-Authenticate", `Bearer realm="`+name+`"`)
-			return routing.NewHTTPError(http.StatusUnauthorized, "ivalid credential")
+			return routing.NewHTTPError(http.StatusUnauthorized, "invalid credential")
 		}
 
 		token, err := jwt.Parse(header[7:], func(t *jwt.Token) (interface{}, error) { return []byte(jwtConfig.Secret), nil })
