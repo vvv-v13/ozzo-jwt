@@ -1,4 +1,4 @@
-## JWT Authorization middleware for go-ozzo framework
+## JWT Authorization middleware for https://github.com/go-ozzo framework
 
 ### Look code in example folder for usage or run example
     cd example
