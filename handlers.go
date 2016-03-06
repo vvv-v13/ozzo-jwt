@@ -4,7 +4,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-
 // Package auth provides a set of user authentication handlers for the ozzo routing package.
 package jwt
 
@@ -49,7 +48,7 @@ type TokenAuthFunc func(c *routing.Context, payload JWTPayload) (Payload, error)
 // )
 //
 // func main() {
-// 
+//
 //        jwtConfig := jwt.JWTConfig{
 //                Alg:     "HS256",
 //                Secret:  "super_secret",
@@ -62,7 +61,7 @@ type TokenAuthFunc func(c *routing.Context, payload JWTPayload) (Payload, error)
 //                        return identity(c, payload)
 //                }, jwtConfig),
 //        )
-// 
+//
 //        router.Get("/demo", func(c *routing.Context) error {
 //                log.Println("User id:", c.Get(jwt.User))
 //        })
