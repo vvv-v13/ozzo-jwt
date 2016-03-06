@@ -41,7 +41,38 @@ type TokenAuthFunc func(c *routing.Context, payload JWTPayload) (Payload, error)
 // JWT returns a routing.Handler that performs HTTP authentication based on bearer token.
 // It can be used like the following:
 //
-// Example
+// import (
+//        "github.com/go-ozzo/ozzo-routing"
+//        "github.com/vvv-v13/ozzo-jwt"
+//        "net/http"
+//        "time"
+// )
+//
+// func main() {
+// 
+//        jwtConfig := jwt.JWTConfig{
+//                Alg:     "HS256",
+//                Secret:  "super_secret",
+//                Expires: time.Now().Add(time.Minute * 120).Unix(),
+//        }
+//
+//        router := routing.New()
+//        router.Use(
+//                jwt.JWT(func(c *routing.Context, payload jwt.JWTPayload) (jwt.Payload, error) {
+//                        return identity(c, payload)
+//                }, jwtConfig),
+//        )
+// 
+//        router.Get("/demo", func(c *routing.Context) error {
+//                log.Println("User id:", c.Get(jwt.User))
+//        })
+//
+// func identity(c *routing.Context, payload jwt.JWTPayload) (jwt.Identity, error) {
+//        if id, ok := payload["id"]; ok {
+//                return jwt.Identity(id), nil
+//        }
+//        return nil, errors.New("invalid credential")
+// }
 //
 // By default, the auth realm is named as "API". You may customize it by specifying the realm parameter.
 //
@@ -77,11 +108,47 @@ func JWT(fn TokenAuthFunc, jwtConfig JWTConfig, realm ...string) routing.Handler
 
 		c.Response.Header().Set("WWW-Authenticate", `Bearer realm="`+name+`"`)
 		return routing.NewHTTPError(http.StatusUnauthorized, e.Error())
-
 	}
 }
 
 // CreateToken returns token string
+//
+// import (
+//        "github.com/go-ozzo/ozzo-routing"
+//        "github.com/vvv-v13/ozzo-jwt"
+//        "net/http"
+//        "time"
+// )
+//
+// func main() {
+//
+//        jwtConfig := jwt.JWTConfig{
+//                Alg:     "HS256",
+//                Secret:  "super_secret",
+//                Expires: time.Now().Add(time.Minute * 120).Unix(),
+//        }
+//
+//        router := routing.New()
+//        router.Post("/api/auth", func(c *routing.Context) error { return authHandler(c, jwtConfig) })
+//
+// func authHandler(c *routing.Context, jwtConfig jwt.JWTConfig) error {
+//
+//        payload := make(jwt.JWTPayload)
+//        payload["id"] = 1
+//        payload["role"] = "user"
+//
+//        token, err := jwt.CreateToken(jwtConfig, payload)
+//        if err != nil {
+//                return routing.NewHTTPError(http.StatusInternalServerError)
+//        }
+//
+//        data := map[string]string{
+//                "token": token,
+//        }
+//
+//        return c.Write(data)
+//
+
 func CreateToken(jwtConfig JWTConfig, payload JWTPayload) (string, error) {
 	signingMethod := jwt.SigningMethodHS256
 
