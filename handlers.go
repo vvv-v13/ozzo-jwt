@@ -12,6 +12,7 @@ import (
 	"github.com/go-ozzo/ozzo-routing"
 	"net/http"
 	"strings"
+        "time"
 )
 
 // User is the key used to store and retrieve the user identity information in routing.Context
@@ -20,7 +21,7 @@ const User = "User"
 type JWTConfig struct {
 	Alg     string
 	Secret  string
-	Expires int64
+	Expires time.Duration 
 }
 
 // Identity represents an authenticated user. If a user is successfully authenticated by
@@ -52,7 +53,7 @@ type TokenAuthFunc func(c *routing.Context, payload JWTPayload) (Payload, error)
 //        jwtConfig := jwt.JWTConfig{
 //                Alg:     "HS256",
 //                Secret:  "super_secret",
-//                Expires: time.Now().Add(time.Minute * 120).Unix(),
+//                Expires: time.Minute * 120,
 //        }
 //
 //        router := routing.New()
@@ -124,7 +125,7 @@ func JWT(fn TokenAuthFunc, jwtConfig JWTConfig, realm ...string) routing.Handler
 //        jwtConfig := jwt.JWTConfig{
 //                Alg:     "HS256",
 //                Secret:  "super_secret",
-//                Expires: time.Now().Add(time.Minute * 120).Unix(),
+//                Expires: time.Minute * 120,
 //        }
 //
 //        router := routing.New()
@@ -160,7 +161,7 @@ func CreateToken(jwtConfig JWTConfig, payload JWTPayload) (string, error) {
 
 	token := jwt.New(signingMethod)
 	token.Claims = payload
-	token.Claims["exp"] = jwtConfig.Expires
+	token.Claims["exp"] = time.Now().Add(jwtConfig.Expires).Unix()
 
 	tokenString, err := token.SignedString([]byte(jwtConfig.Secret))
 
