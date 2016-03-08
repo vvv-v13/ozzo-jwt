@@ -29,7 +29,7 @@ func TestJWT(t *testing.T) {
 	jwtConfig := JWTConfig{
 		Alg:     "HS256",
 		Secret:  "super_secret",
-		Expires: time.Now().Add(time.Minute * 120).Unix(),
+		Expires: time.Minute * 120,
 	}
 
 	h := JWT(identity, jwtConfig, "App")
@@ -89,7 +89,7 @@ func TestCreateToken(t *testing.T) {
 	jwtConfig := JWTConfig{
 		Alg:     "HS256",
 		Secret:  "super_secret",
-		Expires: time.Now().Add(time.Minute * 120).Unix(),
+		Expires: time.Minute * 120,
 	}
 
 	token, err := CreateToken(jwtConfig, payload)
@@ -99,7 +99,7 @@ func TestCreateToken(t *testing.T) {
 	jwtConfig = JWTConfig{
 		Alg:     "HS384",
 		Secret:  "super_secret",
-		Expires: time.Now().Add(time.Minute * 120).Unix(),
+		Expires: time.Minute * 120,
 	}
 
 	token, err = CreateToken(jwtConfig, payload)
@@ -109,7 +109,7 @@ func TestCreateToken(t *testing.T) {
 	jwtConfig = JWTConfig{
 		Alg:     "HS512",
 		Secret:  "super_secret",
-		Expires: time.Now().Add(time.Minute * 120).Unix(),
+		Expires: time.Minute * 120,
 	}
 	token, err = CreateToken(jwtConfig, payload)
 	assert.Nil(t, err)
